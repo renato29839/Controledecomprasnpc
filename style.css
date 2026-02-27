@@ -1,0 +1,47 @@
+:root {
+    --primary: #2eb8ac;
+    --primary-dark: #248f85;
+    --bg-light: #f4f7f6;
+    --text-main: #333;
+    --white: #ffffff;
+    --danger: #e74c3c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+body { background-color: var(--bg-light); color: var(--text-main); }
+
+.container { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar { width: 260px; background: var(--white); border-right: 1px solid #ddd; padding: 20px; }
+.logo-section { text-align: center; margin-bottom: 30px; }
+.logo-img { width: 100px; margin-bottom: 10px; border-radius: 8px; }
+.brand-name { font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+
+.menu { margin-top: 20px; }
+.menu-item {
+    display: flex; align-items: center; padding: 12px;
+    text-decoration: none; color: #666; border-radius: 8px;
+    margin-bottom: 5px; transition: 0.3s;
+}
+.menu-item i { margin-right: 10px; width: 20px; }
+.menu-item:hover, .menu-item.active { background: #e6fffa; color: var(--primary); font-weight: 600; }
+
+/* Main Content */
+.main-content { flex: 1; padding: 30px; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+/* Dashboard Cards */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+.card { background: var(--white); padding: 20px; border-radius: 10px; shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; }
+.card h3 { font-size: 0.85rem; color: #888; margin-bottom: 10px; }
+.value { font-size: 1.8rem; font-weight: bold; }
+.value.warning { color: var(--danger); }
+.value.info { color: var(--primary); }
+
+/* Tabelas e Botões */
+.data-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+.data-table th, .data-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+.btn-add { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+.btn-add:hover { background: var(--primary-dark); }
