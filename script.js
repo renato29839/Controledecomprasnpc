@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
     }
 
-    // --- SEÇÃO DE PRODUTOS ---
+    // --- PRODUTOS ---
     async function renderProdutos() {
         pageTitle.innerText = "Produtos";
         const produtos = await fetchData('produtos');
@@ -93,7 +93,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- SEÇÃO DE FORNECEDORES ---
+    // --- UNIDADES (AGORA COM CONSULTA CNPJ) ---
+    async function renderUnidades() {
+        pageTitle.innerText = "Unidades (Destinos)";
+        const unidades = await fetchData('unidades');
+        contentArea.innerHTML = `<div class="card"><button class="btn-add" id="btn-nova-uni" style="margin-bottom:20px">+ Nova Unidade</button>
+            <table class="data-table"><thead><tr><th>Unidade</th><th>CNPJ</th><th>Ações</th></tr></thead>
+            <tbody>${unidades.map(u => `<tr><td>${u.nomeFantasia}</td><td>${u.cnpj || '---'}</td><td><button class="btn-del" data-id="${u.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div>`;
+        document.getElementById('btn-nova-uni').onclick = () => abrirModalUnidade();
+    }
+
+    async function abrirModalUnidade() {
+        renderBaseModal('Nova Unidade', `
+            <input type="text" id="u-cnpj" placeholder="Digite o CNPJ" style="width:100%; padding:10px; margin-bottom:10px">
+            <button id="btn-u-api" class="btn-add" style="width:100%; margin-bottom:10px; background:#4a5568">Consultar Receita</button>
+            <input type="text" id="u-nome" placeholder="Nome Fantasia" style="width:100%; padding:10px; margin-bottom:10px">
+            <input type="text" id="u-end" placeholder="Endereço Completo" style="width:100%; padding:10px">
+        `, async () => {
+            let u = await fetchData('unidades'); 
+            u.push({ id: Date.now(), nomeFantasia: document.getElementById('u-nome').value, cnpj: document.getElementById('u-cnpj').value, endereco: document.getElementById('u-end').value });
+            await saveData('unidades', u); renderUnidades();
+        });
+
+        document.getElementById('btn-u-api').onclick = async () => {
+            const cnpj = document.getElementById('u-cnpj').value.replace(/\D/g, '');
+            if(!cnpj) return alert("Insira o CNPJ primeiro");
+            const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+            const d = await res.json();
+            document.getElementById('u-nome').value = d.nome_fantasia || d.razao_social || "";
+            document.getElementById('u-end').value = `${d.logradouro}, ${d.numero} - ${d.bairro}, ${d.municipio}-${d.uf}`;
+        };
+    }
+
+    // --- FORNECEDORES ---
     async function renderFornecedores() {
         pageTitle.innerText = "Fornecedores";
         const forn = await fetchData('fornecedores');
@@ -130,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- SEÇÃO DE ORDENS DE COMPRA ---
+    // --- ORDENS DE COMPRA (IMPORTAÇÃO E PESQUISA RESTAURADAS) ---
     async function renderOrdens() {
         pageTitle.innerText = "Ordens de Compra";
         const ordens = await fetchData('ordens');
@@ -154,18 +186,23 @@ document.addEventListener('DOMContentLoaded', () => {
         itensTemp = ordemEdit ? [...ordemEdit.itens] : [];
 
         const html = `
-            <div class="modal-scroll" style="max-height: 70vh;">
+            <div class="modal-scroll" style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div><label><b>Destino:</b></label><select id="oc-uni" style="width:100%; padding:10px; margin-top:5px">${unidades.map(u => `<option value="${u.id}" ${ordemEdit?.destinoNome === u.nomeFantasia ? 'selected' : ''}>${u.nomeFantasia}</option>`).join('')}</select></div>
                     <div><label><b>Fornecedor:</b></label><select id="oc-forn" style="width:100%; padding:10px; margin-top:5px">${fornecedores.map(f => `<option value="${f.id}" ${ordemEdit?.fornecedorNome === f.razaoSocial ? 'selected' : ''}>${f.razaoSocial}</option>`).join('')}</select></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div><label><b>Pagamento:</b></label><input type="text" id="oc-pgto" placeholder="Ex: Boleto" value="${ordemEdit?.pagamento || ''}" style="width:100%; padding:10px; margin-top:5px"></div>
+                    <div><label><b>Pagamento:</b></label><input type="text" id="oc-pgto" placeholder="Forma Pagamento" value="${ordemEdit?.pagamento || ''}" style="width:100%; padding:10px; margin-top:5px"></div>
                     <div><label><b>Entrega:</b></label><input type="date" id="oc-data" value="${ordemEdit?.dataEntrega || ''}" style="width:100%; padding:10px; margin-top:5px"></div>
                 </div>
                 <div style="background:#f0fdfa; padding:15px; border-radius:10px; border:2px solid var(--primary); margin-bottom: 15px;">
-                    <div style="display:flex; gap:10px"><select id="oc-p-sel" style="flex:3; padding:10px">${produtos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}</select>
-                    <input type="number" id="oc-p-qtd" placeholder="Qtd" style="flex:1; padding:10px"><button id="btn-add-item" class="btn-add">Add</button></div>
+                    <label><b>Pesquisar Item:</b></label>
+                    <input type="text" id="p-search" placeholder="Digite o nome do produto..." style="width:100%; padding:10px; margin: 10px 0;">
+                    <div style="display:flex; gap:10px">
+                        <select id="oc-p-sel" style="flex:3; padding:10px">${produtos.map(p => `<option value="${p.id}">${p.nome}</option>`).join('')}</select>
+                        <input type="number" id="oc-p-qtd" placeholder="Qtd" style="flex:1; padding:10px">
+                        <button id="btn-add-item" class="btn-add">Add</button>
+                    </div>
                 </div>
                 <div id="oc-lista" style="border:1px solid #ddd; border-radius:8px; padding:15px; background:#fff;"></div>
                 <h2 id="oc-total" style="text-align:right; margin-top:15px; color:var(--primary)">Total: R$ 0.00</h2>
@@ -178,12 +215,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const novaOrdem = { id: editId || Date.now(), destinoNome: uni.nomeFantasia, fornecedorNome: forn.razaoSocial, pagamento: document.getElementById('oc-pgto').value, dataEntrega: document.getElementById('oc-data').value, total: itensTemp.reduce((s, i) => s + (i.qtd * i.preco), 0), itens: itensTemp };
             const atualizadas = editId ? ordens.map(o => o.id === editId ? novaOrdem : o) : [...ordens, novaOrdem];
             await saveData('ordens', atualizadas); renderOrdens();
-        }, "800px");
+        }, "850px");
+
+        // Lógica de Filtro de Pesquisa (Originalidade)
+        document.getElementById('p-search').oninput = (e) => {
+            const termo = e.target.value.toLowerCase();
+            const filtered = produtos.filter(p => p.nome.toLowerCase().includes(termo));
+            document.getElementById('oc-p-sel').innerHTML = filtered.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+        };
 
         const atualizarLista = () => {
-            document.getElementById('oc-lista').innerHTML = itensTemp.map((i, idx) => `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee"><span>${i.nome} (x${i.qtd})</span><button onclick="window.removerItemOC(${idx})" style="color:red; background:none; border:none; cursor:pointer">X</button></div>`).join('');
+            document.getElementById('oc-lista').innerHTML = itensTemp.length === 0 ? '<p style="text-align:center; color:#999">Nenhum item adicionado.</p>' : 
+            itensTemp.map((i, idx) => `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee"><span>${i.nome} (x${i.qtd}) - R$ ${(i.qtd * i.preco).toFixed(2)}</span><button onclick="window.removerItemOC(${idx})" style="color:red; background:none; border:none; cursor:pointer"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
             document.getElementById('oc-total').innerText = `Total: R$ ${itensTemp.reduce((s, i) => s + (i.qtd * i.preco), 0).toFixed(2)}`;
         };
+
         window.removerItemOC = (idx) => { itensTemp.splice(idx, 1); atualizarLista(); };
         document.getElementById('btn-add-item').onclick = () => {
             const p = produtos.find(x => x.id == document.getElementById('oc-p-sel').value);
@@ -193,32 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
         atualizarLista();
     }
 
-    // --- SEÇÃO DE UNIDADES ---
-    async function renderUnidades() {
-        pageTitle.innerText = "Unidades (Destinos)";
-        const unidades = await fetchData('unidades');
-        contentArea.innerHTML = `<div class="card"><button class="btn-add" id="btn-nova-uni" style="margin-bottom:20px">+ Nova Unidade</button>
-            <table class="data-table"><thead><tr><th>Unidade</th><th>Ações</th></tr></thead>
-            <tbody>${unidades.map(u => `<tr><td>${u.nomeFantasia}</td><td><button class="btn-del" data-id="${u.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div>`;
-        document.getElementById('btn-nova-uni').onclick = () => renderBaseModal('Nova Unidade', `
-            <input type="text" id="u-cnpj" placeholder="CNPJ" style="width:100%; padding:10px; margin-bottom:10px">
-            <input type="text" id="u-nome" placeholder="Nome Fantasia" style="width:100%; padding:10px; margin-bottom:10px">
-            <input type="text" id="u-end" placeholder="Endereço" style="width:100%; padding:10px">
-        `, async () => {
-            let u = await fetchData('unidades'); u.push({ id: Date.now(), nomeFantasia: document.getElementById('u-nome').value, cnpj: document.getElementById('u-cnpj').value, endereco: document.getElementById('u-end').value });
-            await saveData('unidades', u); renderUnidades();
-        });
-    }
-
-    // --- MODAL BASE ---
+    // --- BASE MODAL ---
     function renderBaseModal(titulo, html, onSave, maxWidth = "500px") {
         if(document.getElementById('modal-overlay')) document.getElementById('modal-overlay').remove();
         document.body.insertAdjacentHTML('beforeend', `<div id="modal-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10000; padding:20px;">
-            <div class="modal-container" style="width:100%; max-width:${maxWidth}; background:white; padding:30px; border-radius:15px; display:flex; flex-direction:column;">
-                <h2 style="color:var(--primary); margin-bottom:20px;">${titulo}</h2>${html}
+            <div class="modal-container" style="width:100%; max-width:${maxWidth}; background:white; padding:30px; border-radius:15px; display:flex; flex-direction:column; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <h2 style="color:var(--primary); margin-bottom:20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;">${titulo}</h2>${html}
                 <div style="display:flex; justify-content:flex-end; gap:15px; margin-top:25px; border-top:1px solid #eee; padding-top:20px">
-                    <button id="btn-cancel" style="padding:10px 20px; cursor:pointer; border-radius:8px; border:none; background:#eee">Cancelar</button>
-                    <button class="btn-add" id="btn-save" style="padding:10px 20px">Salvar</button>
+                    <button id="btn-cancel" style="padding:10px 25px; cursor:pointer; border-radius:8px; border:none; background:#eee; font-weight:bold;">Cancelar</button>
+                    <button class="btn-add" id="btn-save" style="padding:10px 30px; font-weight:bold;">Salvar</button>
                 </div></div></div>`);
         document.getElementById('btn-cancel').onclick = () => document.getElementById('modal-overlay').remove();
         document.getElementById('btn-save').onclick = async () => { await onSave(); document.getElementById('modal-overlay').remove(); };
@@ -228,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(confirm("Excluir definitivamente?")) { let d = await fetchData(path); await saveData(path, d.filter(x => x.id !== id)); renderPage(path); }
     }
 
-    // --- IMPRESSÃO COMPACTA E OTIMIZADA ---
+    // --- IMPRESSÃO COMPACTA OTIMIZADA ---
     async function imprimirOC(id) {
         const [ordens, fornecedores, unidades] = await Promise.all([fetchData('ordens'), fetchData('fornecedores'), fetchData('unidades')]);
         const o = ordens.find(x => x.id === id);
@@ -237,57 +266,34 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const win = window.open('', '', 'width=900,height=800');
         win.document.write(`<html><head><style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; font-size: 11px; line-height: 1.3; }
-            .header-table { width: 100%; border-bottom: 3px solid #2eb8ac; margin-bottom: 10px; }
-            .logo-cell { width: 120px; padding-bottom: 5px; }
-            .title-cell { text-align: right; vertical-align: bottom; }
-            .title-cell h1 { color: #2eb8ac; margin: 0; font-size: 22px; text-transform: uppercase; }
-            .info-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; background: #f8fafc; margin-bottom: 10px; }
-            .box-title { background: #2eb8ac; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-bottom: 5px; display: inline-block; font-size: 10px; }
-            .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-            table.items-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-            table.items-table th { background: #f1f5f9; text-align: left; padding: 8px; border-bottom: 2px solid #2eb8ac; color: #475569; }
-            table.items-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
-            .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-            .total-row { text-align: right; font-size: 16px; color: #2eb8ac; font-weight: bold; padding: 10px 0; }
-            .sig-area { margin-top: 60px; display: flex; justify-content: space-around; }
-            .sig-line { border-top: 1px solid #475569; width: 220px; text-align: center; padding-top: 5px; font-weight: bold; color: #475569; }
-            @media print { .no-print { display: none; } }
+            body { font-family: 'Segoe UI', sans-serif; padding: 20px; color: #333; font-size: 11px; }
+            .header { display: flex; justify-content: space-between; border-bottom: 3px solid #2eb8ac; padding-bottom: 5px; margin-bottom: 10px; }
+            .info-box { border: 1px solid #ddd; border-radius: 5px; padding: 8px; background: #f9f9f9; margin-bottom: 8px; }
+            .box-title { background: #2eb8ac; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 9px; margin-bottom: 5px; display: inline-block; }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th { text-align: left; padding: 8px; background: #f1f1f1; border-bottom: 2px solid #2eb8ac; }
+            td { padding: 8px; border-bottom: 1px solid #eee; }
+            .total { text-align: right; font-size: 16px; color: #2eb8ac; font-weight: bold; margin: 10px 0; }
+            .sig-area { margin-top: 50px; display: flex; justify-content: space-around; }
+            .sig-line { border-top: 1px solid #333; width: 220px; text-align: center; padding-top: 5px; font-weight: bold; }
         </style></head><body>
-            <table class="header-table"><tr>
-                <td class="logo-cell"><img src="https://i.postimg.cc/Wz5R0cdL/LOGONPC.png" width="100"></td>
-                <td class="title-cell"><h1>Ordem de Compra</h1><p style="margin:2px 0;">Nº OC: <b>${o.id}</b> | Emissão: <b>${new Date(o.id).toLocaleDateString('pt-BR')}</b></p></td>
-            </tr></table>
-
-            <div class="info-box">
-                <span class="box-title">ESTABELECIMENTO / COMPRADOR</span>
-                <p style="margin:2px 0;"><b>Razão Social:</b> ${u.nomeFantasia || o.destinoNome} | <b>CNPJ:</b> ${u.cnpj || '---'}</p>
-                <p style="margin:2px 0;"><b>Endereço de Entrega:</b> ${u.endereco || '---'}</p>
+            <div class="header">
+                <img src="https://i.postimg.cc/mD3m8vS0/npc-logo.png" width="90">
+                <div style="text-align:right"><h1 style="color:#2eb8ac; margin:0; font-size:20px;">ORDEM DE COMPRA</h1><p>#${o.id} | Emissão: ${new Date(o.id).toLocaleDateString('pt-BR')}</p></div>
             </div>
-
-            <div class="info-box">
-                <span class="box-title">FORNECEDOR</span>
-                <p style="margin:2px 0;"><b>Razão Social:</b> ${f.razaoSocial || o.fornecedorNome} | <b>CNPJ:</b> ${f.cnpj || '---'}</p>
-                <p style="margin:2px 0;"><b>Endereço:</b> ${f.endereco || '---'}</p>
+            <div class="info-box"><span class="box-title">COMPRADOR</span><br><b>${u.nomeFantasia || o.destinoNome}</b> | CNPJ: ${u.cnpj || '---'}<br>Endereço: ${u.endereco || '---'}</div>
+            <div class="info-box"><span class="box-title">FORNECEDOR</span><br><b>${f.razaoSocial || o.fornecedorNome}</b> | CNPJ: ${f.cnpj || '---'}<br>Endereço: ${f.endereco || '---'}</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                <div class="info-box"><span class="box-title">PAGAMENTO</span><br><b>${o.pagamento || 'A combinar'}</b></div>
+                <div class="info-box"><span class="box-title">ENTREGA</span><br><b>${o.dataEntrega ? new Date(o.dataEntrega).toLocaleDateString('pt-BR') : 'Imediata'}</b></div>
             </div>
-
-            <div class="data-grid">
-                <div class="info-box" style="margin:0"><span class="box-title">FORMA DE PAGAMENTO</span><p><b>${o.pagamento || 'A combinar'}</b></p></div>
-                <div class="info-box" style="margin:0"><span class="box-title">PREVISÃO DE ENTREGA</span><p><b>${o.dataEntrega ? new Date(o.dataEntrega).toLocaleDateString('pt-BR') : 'Imediata'}</b></p></div>
-            </div>
-
-            <table class="items-table">
-                <thead><tr><th style="width:50px">Item</th><th>Descrição do Produto/Serviço</th><th style="text-align:center">Qtd</th><th style="text-align:right">Preço Unit.</th><th style="text-align:right">Total</th></tr></thead>
-                <tbody>${o.itens.map((i, idx) => `<tr><td>${idx + 1}</td><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.preco.toFixed(2)}</td><td style="text-align:right">R$ ${(i.qtd*i.preco).toFixed(2)}</td></tr>`).join('')}</tbody>
-            </table>
-
-            <div class="total-row">VALOR TOTAL DA ORDEM: R$ ${o.total.toFixed(2)}</div>
-
+            <table><thead><tr><th>Item</th><th>Descrição</th><th style="text-align:center">Qtd</th><th style="text-align:right">Unitário</th><th style="text-align:right">Total</th></tr></thead>
+            <tbody>${o.itens.map((i, idx) => `<tr><td>${idx+1}</td><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">R$ ${i.preco.toFixed(2)}</td><td style="text-align:right">R$ ${(i.qtd*i.preco).toFixed(2)}</td></tr>`).join('')}</tbody></table>
+            <div class="total">TOTAL: R$ ${o.total.toFixed(2)}</div>
             <div class="sig-area">
-                <div class="sig-line">Setor de Compras / Logística<br><span style="font-size:9px; font-weight:normal;">${u.nomeFantasia || o.destinoNome}</span></div>
-                <div class="sig-line">Aprovação / Fornecedor<br><span style="font-size:9px; font-weight:normal;">${o.fornecedorNome}</span></div>
+                <div class="sig-line">${u.nomeFantasia || o.destinoNome}</div>
+                <div class="sig-line">${o.fornecedorNome}</div>
             </div>
-
             <script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };</script>
         </body></html>`);
         win.document.close();
