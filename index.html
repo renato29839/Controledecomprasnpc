@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPC - Sistema de Compras</title>
+    <title>NPC - Sistema de Compras (Cloud)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
+        }
+    }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -37,13 +46,19 @@
         <main class="main-content">
             <header>
                 <h2 id="page-title">Dashboard</h2>
-                <div class="user-info">Setor de Compras | <span id="current-date"></span></div>
+                <div class="user-info">
+                    Setor de Compras | <span id="current-date"></span>
+                </div>
             </header>
 
             <section id="content-area">
-                </section>
+                <div class="card">
+                    <h3>Conectando ao banco de dados...</h3>
+                </div>
+            </section>
         </main>
     </div>
-    <script src="script.js"></script>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
