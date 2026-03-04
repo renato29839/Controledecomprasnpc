@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPC - Sistema de Compras (Cloud)</title>
+    <title>NPC - Sistema de Compras</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -21,12 +21,15 @@
         <aside class="sidebar">
             <div class="logo-section">
                 <img src="https://i.postimg.cc/Wz5R0cdL/LOGONPC.png" alt="Logo NPC" class="logo-img">
-                <h2 class="system-title"></h2>
+                <h2 class="system-title">Sistema Interno</h2>
             </div>
 
             <nav class="menu">
                 <a href="#" class="menu-item active" data-target="dashboard">
                     <i class="fa-solid fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="#" class="menu-item" data-target="unidades">
+                    <i class="fa-solid fa-building"></i> Unidades (Destinos)
                 </a>
                 <a href="#" class="menu-item" data-target="produtos">
                     <i class="fa-solid fa-box"></i> Produtos
@@ -37,23 +40,18 @@
                 <a href="#" class="menu-item" data-target="ordens">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Ordens de Compra
                 </a>
-                <a href="#" class="menu-item" data-target="estoque">
-                    <i class="fa-solid fa-warehouse"></i> Centro de Estoque
-                </a>
             </nav>
         </aside>
 
         <main class="main-content">
             <header>
                 <h2 id="page-title">Dashboard</h2>
-                <div class="user-info">
-                    Setor de Compras | <span id="current-date"></span>
-                </div>
+                <div class="user-info">Setor de Compras | <span id="current-date"></span></div>
             </header>
 
             <section id="content-area">
-                <div class="card">
-                    <h3>Conectando ao banco de dados...</h3>
+                <div class="card" style="text-align:center">
+                    <h3><i class="fa-solid fa-spinner fa-spin"></i> Inicializando sistema...</h3>
                 </div>
             </section>
         </main>
@@ -62,4 +60,3 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
