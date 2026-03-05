@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UNIDADES ---
     async function renderUnidades() {
-        pageTitle.innerText = "Unidades Acadêmicas";
+        pageTitle.innerText = "Unidades";
         const unidades = await fetchData('unidades');
         contentArea.innerHTML = `<div class="card"><button class="btn-add" id="btn-nova-uni" style="margin-bottom:20px">+ Nova Unidade</button>
             <table class="data-table"><thead><tr><th style="text-align:left">Unidade</th><th style="text-align:left">CNPJ</th><th>Ações</th></tr></thead>
@@ -390,3 +390,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderDashboard();
 });
+
