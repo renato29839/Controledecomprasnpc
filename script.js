@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .sig { margin-top: 50px; display: flex; justify-content: space-around; }
             .sig-line { border-top: 1px solid #94a3b8; width: 200px; text-align: center; font-size: 9px; padding-top: 3px; }
         </style></head><body>
-            <div class="header"><img src="https://i.postimg.cc/mD3m8vS0/npc-logo.png" width="120">
+            <div class="header"><img src="https://i.postimg.cc/Wz5R0cdL/LOGONPC.png" width="120">
             <div style="text-align:right"><h1 style="color:#2eb8ac; margin:0; font-size:20px">ORDEM DE COMPRA</h1><p style="font-size:10px">#${o.id} | ${new Date(o.id).toLocaleDateString()}</p></div></div>
             
             <div class="info-grid">
@@ -390,4 +390,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderDashboard();
 });
+
 
