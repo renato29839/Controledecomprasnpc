@@ -60,19 +60,57 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (target === 'movimentacoes') await renderMovimentacoes();
     }
 
-    // --- DASHBOARD ---
-    async function renderDashboard() {
-        pageTitle.innerText = "Resumo do Sistema";
-        const [p, o, u] = await Promise.all([fetchData('produtos'), fetchData('ordens'), fetchData('unidades')]);
-        const totalRecebido = o.filter(x => x.status === 'Recebida').reduce((s, i) => s + i.total, 0);
-        contentArea.innerHTML = `
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
-                <div class="card"><h3>Unidades</h3><p style="font-size:24px; color:#2eb8ac">${u.length}</p></div>
-                <div class="card"><h3>Produtos</h3><p style="font-size:24px; color:#2eb8ac">${p.length}</p></div>
-                <div class="card"><h3>Total Recebido</h3><p style="font-size:24px; color:#20B2AA">R$ ${totalRecebido.toFixed(2)}</p></div>
-            </div>`;
-    }
+  async function renderDashboard() {
+    pageTitle.innerText = "Resumo do Sistema";
+    const [p, o, u, m] = await Promise.all([
+        fetchData('produtos'), 
+        fetchData('ordens'), 
+        fetchData('unidades'),
+        fetchData('movimentacoes')
+    ]);
 
+    // Define o mês atual como padrão se não houver seleção
+    const now = new Date();
+    const currentMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    contentArea.innerHTML = `
+        <div class="card" style="margin-bottom:20px; display:flex; align-items:center; gap:15px;">
+            <label><b>Filtrar Período:</b></label>
+            <input type="month" id="dash-filter-month" value="${currentMonthYear}" style="padding:8px; border-radius:5px; border:1px solid #ccc">
+        </div>
+        <div id="dash-stats" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+            </div>`;
+
+    const updateStats = (period) => {
+        const [year, month] = period.split('-').map(Number);
+        
+        // Filtra OCs Recebidas no mês selecionado
+        const ordensMes = o.filter(x => {
+            const d = new Date(x.id); // Usando ID como timestamp
+            return x.status === 'Recebida' && d.getFullYear() === year && (d.getMonth() + 1) === month;
+        });
+
+        // Filtra Saídas no mês selecionado
+        const saidasMes = m.filter(x => {
+            const d = new Date(x.data);
+            return x.tipo === 'SAÍDA' && d.getFullYear() === year && (d.getMonth() + 1) === month;
+        });
+    
+
+        const totalRecebido = ordensMes.reduce((s, i) => s + i.total, 0);
+        const qtdSaidas = saidasMes.length;
+
+        document.getElementById('dash-stats').innerHTML = `
+            <div class="card"><h3>Unidades</h3><p style="font-size:24px; color:#2eb8ac">${u.length}</p></div>
+            <div class="card"><h3>Produtos</h3><p style="font-size:24px; color:#2eb8ac">${p.length}</p></div>
+            <div class="card"><h3>Compras no Mês</h3><p style="font-size:24px; color:#20B2AA">R$ ${totalRecebido.toFixed(2)}</p></div>
+            <div class="card"><h3>Saídas (Consumo)</h3><p style="font-size:24px; color:#ef4444">${qtdSaidas}</p></div>
+        `;
+    };
+    document.getElementById('dash-filter-month').onchange = (e) => updateStats(e.target.value);
+    updateStats(currentMonthYear);
+    
+    }
     // --- UNIDADES ---
     async function renderUnidades() {
         pageTitle.innerText = "Unidades";
@@ -172,15 +210,71 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- ORDENS DE COMPRA ---
-    async function renderOrdens() {
-        pageTitle.innerText = "Ordens de Compra";
-        const ordens = await fetchData('ordens');
-        contentArea.innerHTML = `<div class="card"><button class="btn-add" id="btn-nova-oc" style="margin-bottom:20px">+ Gerar Ordem</button>
-            <table class="data-table"><thead><tr><th style="text-align:left">Nº</th><th style="text-align:left">Destino</th><th style="text-align:left">Status</th><th style="text-align:left">Total</th><th>Ações</th></tr></thead>
-            <tbody>${ordens.map(o => {
-                const color = o.status === 'Recebida' ? '#2eb8ac' : o.status === 'Aprovada' ? '#3b82f6' : o.status === 'Cancelada' ? '#ef4444' : '#f59e0b';
-                return `<tr><td style="text-align:left">#${o.id}</td><td style="text-align:left">${o.destinoNome}</td>
-                <td style="text-align:left"><span style="background:${color}; color:white; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:bold">${o.status || 'Pendente'}</span></td>
+  async function renderOrdens() {
+    pageTitle.innerText = "Ordens de Compra";
+    const ordens = await fetchData('ordens');
+
+    // Define o mês atual como padrão para o filtro inicial
+    const now = new Date();
+    const currentMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    contentArea.innerHTML = `
+        <div class="card" style="margin-bottom:20px; display:flex; align-items:center; justify-content: space-between; gap:15px; flex-wrap: wrap;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="btn-add" id="btn-nova-oc">+ Gerar Ordem</button>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
+                <label><b>Filtrar por Mês:</b></label>
+                <input type="month" id="oc-filter-month" value="${currentMonthYear}" style="padding:8px; border-radius:5px; border:1px solid #ccc">
+            </div>
+        </div>
+        <div class="card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="text-align:left">Nº / Data</th>
+                        <th style="text-align:left">Fornecedor</th>
+                        <th style="text-align:left">Unidade Destino</th>
+                        <th style="text-align:left">Status</th>
+                        <th style="text-align:left">Total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body-ordens">
+                    </tbody>
+            </table>
+        </div>`;
+
+    const tableBody = document.getElementById('table-body-ordens');
+    const filterInput = document.getElementById('oc-filter-month');
+
+    const applyFilter = (period) => {
+        const [year, month] = period.split('-').map(Number);
+        
+        // Filtra as ordens pela data (ID é o timestamp)
+        const filtradas = ordens.filter(o => {
+            const d = new Date(o.id);
+            return d.getFullYear() === year && (d.getMonth() + 1) === month;
+        });
+
+        if (filtradas.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b">Nenhuma ordem encontrada para este período.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = filtradas.reverse().map(o => {
+            const color = o.status === 'Recebida' ? '#2eb8ac' : o.status === 'Aprovada' ? '#3b82f6' : o.status === 'Cancelada' ? '#ef4444' : '#f59e0b';
+            return `
+            <tr>
+                <td style="text-align:left">
+                    <b>#${o.id.toString().slice(-6)}</b><br>
+                    <small>${new Date(o.id).toLocaleDateString()}</small>
+                </td>
+                <td style="text-align:left; font-size:12px">${o.fornecedorNome}</td>
+                <td style="text-align:left; font-size:12px">${o.destinoNome}</td>
+                <td style="text-align:left">
+                    <span style="background:${color}; color:white; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:bold">${o.status || 'Pendente'}</span>
+                </td>
                 <td style="text-align:left">R$ ${o.total.toFixed(2)}</td>
                 <td>
                     <select onchange="window.atualizarStatusOC('${o.id}', this.value)" style="padding:4px; font-size:11px" ${o.status === 'Recebida' ? 'disabled' : ''}>
@@ -189,10 +283,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         <option value="Recebida" ${o.status==='Recebida'?'selected':''}>Recebida</option>
                         <option value="Cancelada" ${o.status==='Cancelada'?'selected':''}>Cancelada</option>
                     </select>
-                    <button onclick="window.imprimirOC('${o.id}')" style="color:#20B2AA; border:none; background:none; cursor:pointer; margin-left:8px"><i class="fa-solid fa-print"></i></button>
-                    <button onclick="window.confirmarExclusao('ordens', '${o.id}', renderOrdens)" style="color:#ef4444; background:none; border:none; cursor:pointer; margin-left:8px"><i class="fa-solid fa-trash"></i></button>
-                </td></tr>`}).join('')}</tbody></table></div>`;
-        document.getElementById('btn-nova-oc').onclick = () => window.abrirModalOrdem();
+                    <button onclick="window.imprimirOC('${o.id}')" style="color:#20B2AA; border:none; background:none; cursor:pointer; margin-left:8px" title="Imprimir"><i class="fa-solid fa-print"></i></button>
+                    <button onclick="window.confirmarExclusao('ordens', '${o.id}', renderOrdens)" style="color:#ef4444; background:none; border:none; cursor:pointer; margin-left:8px" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>`;
+        }).join('');
+    };
+
+    // Eventos
+    filterInput.onchange = (e) => applyFilter(e.target.value);
+    document.getElementById('btn-nova-oc').onclick = () => window.abrirModalOrdem();
+    
+    // Executa o filtro inicial (mês atual)
+    applyFilter(currentMonthYear);
     }
 
     window.atualizarStatusOC = async (id, novoStatus) => {
@@ -313,11 +416,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MOVIMENTAÇÕES ---
     async function renderMovimentacoes() {
-        pageTitle.innerText = "Histórico de Movimentações";
-        const movs = await fetchData('movimentacoes');
-        contentArea.innerHTML = `<div class="card"><table class="data-table"><thead><tr><th style="text-align:left">Data</th><th style="text-align:left">Tipo</th><th style="text-align:left">Produto</th><th style="text-align:left">Qtd</th><th style="text-align:left">Origem/Destino</th></tr></thead>
-        <tbody>${movs.reverse().map(m => `<tr><td style="text-align:left">${new Date(m.data).toLocaleString()}</td><td style="text-align:left; color:${m.tipo==='ENTRADA'?'green':'red'}; font-weight:bold">${m.tipo}</td><td style="text-align:left">${m.produto}</td><td style="text-align:left">${m.qtd}</td><td style="text-align:left">${m.origem}</td></tr>`).join('')}</tbody></table></div>`;
-    }
+    pageTitle.innerText = "Histórico de Movimentações";
+    const movs = await fetchData('movimentacoes');
+    
+    const now = new Date();
+    const currentMonthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    contentArea.innerHTML = `
+        <div class="card" style="margin-bottom:20px; display:flex; align-items:center; gap:15px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border); width: fit-content;">
+            <label><b>Filtrar Período:</b></label>
+            <input type="month" id="mov-filter-month" value="${currentMonthYear}" style="padding:8px; border-radius:5px; border:1px solid #ccc">
+        </div>
+        <div class="card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="text-align:left">Data/Hora</th>
+                        <th style="text-align:left">Tipo</th>
+                        <th style="text-align:left">Produto</th>
+                        <th style="text-align:left">Qtd</th>
+                        <th style="text-align:left">Origem/Destino</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body-movs"></tbody>
+            </table>
+        </div>`;
+
+    const tableBody = document.getElementById('table-body-movs');
+    const filterInput = document.getElementById('mov-filter-month');
+
+    const applyFilter = (period) => {
+        const [year, month] = period.split('-').map(Number);
+        const filtradas = movs.filter(m => {
+            const d = new Date(m.data);
+            return d.getFullYear() === year && (d.getMonth() + 1) === month;
+        });
+
+        if (filtradas.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#64748b">Nenhuma movimentação neste período.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = filtradas.reverse().map(m => `
+            <tr>
+                <td style="text-align:left; font-size:11px">${new Date(m.data).toLocaleString()}</td>
+                <td style="text-align:left; color:${m.tipo==='ENTRADA'?'#2eb8ac':'#ef4444'}; font-weight:bold">${m.tipo}</td>
+                <td style="text-align:left">${m.produto}</td>
+                <td style="text-align:left">${m.qtd}</td>
+                <td style="text-align:left; font-size:11px">${m.origem}</td>
+            </tr>`).join('');
+    };
+
+    filterInput.onchange = (e) => applyFilter(e.target.value);
+    applyFilter(currentMonthYear);
+}
 
     // --- IMPRESSÃO PROFISSIONAL (COM ENDEREÇOS CORRIGIDOS) ---
     window.imprimirOC = async (id) => {
@@ -390,5 +542,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderDashboard();
 });
-
-
+window.exportarParaCSV = (idTabela, nomeArquivo) => {
+    const tabela = document.querySelector(idTabela);
+    let csv = [];
+    const linhas = tabela.querySelectorAll("tr");
+    
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = [], colunas = linhas[i].querySelectorAll("td, th");
+        // Ignora a última coluna (Ações) se ela existir
+        const limite = colunas.length > 5 ? colunas.length - 1 : colunas.length;
+        
+        for (let j = 0; j < limite; j++) {
+            // Limpa o texto de quebras de linha e vírgulas para não quebrar o CSV
+            let texto = colunas[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ".");
+            linha.push(texto);
+        }
+        csv.push(linha.join(","));
+    }
+    
+    const csvFile = new Blob(["\ufeff" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(csvFile);
+    link.download = `${nomeArquivo}_${new Date().toLocaleDateString()}.csv`;
+    link.click();
+};
+window.exportarParaCSV = (idTabela, nomeArquivo) => {
+    const tabela = document.querySelector(idTabela);
+    let csv = [];
+    const linhas = tabela.querySelectorAll("tr");
+    
+    for (let i = 0; i < linhas.length; i++) {
+        const linha = [], colunas = linhas[i].querySelectorAll("td, th");
+        // Ignora a última coluna (Ações) se ela existir
+        const limite = colunas.length > 5 ? colunas.length - 1 : colunas.length;
+        
+        for (let j = 0; j < limite; j++) {
+            // Limpa o texto de quebras de linha e vírgulas para não quebrar o CSV
+            let texto = colunas[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/,/g, ".");
+            linha.push(texto);
+        }
+        csv.push(linha.join(","));
+    }
+    
+    const csvFile = new Blob(["\ufeff" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(csvFile);
+    link.download = `${nomeArquivo}_${new Date().toLocaleDateString()}.csv`;
+    link.click();
+};
