@@ -59,3 +59,63 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 }
 .modal-scroll { overflow-y: auto; padding-right: 5px; margin-bottom: 15px; }
 #oc-lista { font-size: 13px; max-height: 120px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 4px; }
+
+:root {
+    --primary: #2eb8ac;
+    --primary-dark: #248f85;
+    --bg-light: #f4f7f6;
+    --text-main: #333;
+    --white: #ffffff;
+    --danger: #e74c3c;
+    --border: #e2e8f0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { background-color: var(--bg-light); color: var(--text-main); }
+.container { display: flex; min-height: 100vh; }
+
+/* Sidebar e Menu */
+.sidebar { width: 260px; background: var(--white); border-right: 1px solid var(--border); padding: 30px 15px; }
+.menu-item { display: flex; align-items: center; padding: 12px 20px; color: #64748b; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+.menu-item:hover { background: #f0fdfa; color: var(--primary); }
+.menu-item.active { background: var(--primary); color: white; }
+
+/* Cards e Tabelas */
+.card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--border); }
+.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.data-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--primary); color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
+.data-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+.data-table tr:hover { background-color: #f8fafc; }
+
+/* Botões */
+.btn-add { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+.btn-add:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+/* Inputs */
+input[type="month"], input[type="text"], input[type="number"], select { border: 1px solid #ddd; border-radius: 6px; outline: none; transition: 0.2s; }
+input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(46, 184, 172, 0.1); }
+/* Alinhamento à esquerda para nomes de produtos e itens de OC */
+.data-table th:first-child, 
+.data-table td:first-child {
+    text-align: left !important;
+    padding-left: 20px; /* Adiciona um respiro na borda esquerda */
+}
+
+/* Garante que o texto longo não quebre o layout */
+.data-table td:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px; /* Limite opcional para nomes muito extensos */
+}
+
+/* Mantém os cabeçalhos de estoque e preço alinhados com os dados */
+.data-table th:nth-child(2), .data-table td:nth-child(2),
+.data-table th:nth-child(3), .data-table td:nth-child(3) {
+    text-align: center;
+}
+
+/* Mantém as ações centralizadas */
+.data-table th:last-child, .data-table td:last-child {
+    text-align: center;
+}
