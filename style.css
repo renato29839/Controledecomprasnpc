@@ -1,121 +1,183 @@
+/* 1. CONFIGURAÇÕES GLOBAIS */
 :root {
     --primary: #2eb8ac;
     --primary-dark: #248f85;
     --bg-light: #f4f7f6;
     --text-main: #333;
+    --text-muted: #64748b;
     --white: #ffffff;
     --danger: #e74c3c;
     --border: #e2e8f0;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-body { background-color: var(--bg-light); color: var(--text-main); }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+}
+
+body { 
+    background-color: var(--bg-light); 
+    color: var(--text-main); 
+    line-height: 1.5;
+}
+
 .container { display: flex; min-height: 100vh; }
 
+/* 2. SIDEBAR E NAVEGAÇÃO */
 .sidebar { 
-    width: 260px; background: var(--white); border-right: 1px solid var(--border); 
-    padding: 30px 15px; display: flex; flex-direction: column; align-items: center; 
+    width: 260px; 
+    background: var(--white); 
+    border-right: 1px solid var(--border); 
+    padding: 30px 15px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
 }
-.logo-section { text-align: center; margin-bottom: 30px; width: 100%; }
-.logo-img { width: 110px; height: auto; margin-bottom: 10px; }
-.system-title { font-size: 0.95rem; color: #475569; font-weight: 600; margin-top: 5px; }
 
-.menu { width: 100%; margin-top: 20px; }
+.logo-section { text-align: center; margin-bottom: 30px; }
+.logo-img { width: 110px; height: auto; }
+
+.menu { width: 100%; }
+
+/* Estilo para as Labels (Categorias) do Menu */
+.menu-label {
+    padding: 20px 20px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 .menu-item {
-    display: flex; align-items: center; padding: 12px 20px; text-decoration: none; 
-    color: #64748b; border-radius: 10px; margin-bottom: 5px; transition: 0.3s; cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: var(--text-muted);
+    border-radius: 10px;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
 }
-.menu-item i { margin-right: 15px; font-size: 1.1rem; width: 20px; text-align: center; }
-.menu-item:hover, .menu-item.active { background: #f0fdfa; color: var(--primary); font-weight: 600; }
 
+.menu-item i { width: 20px; margin-right: 12px; font-size: 1.1rem; text-align: center; }
+
+.menu-item:hover { 
+    background: #f0fdfa; 
+    color: var(--primary); 
+}
+
+.menu-item.active { 
+    background: var(--primary); 
+    color: var(--white); 
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(46, 184, 172, 0.2);
+}
+
+/* 3. ÁREA PRINCIPAL E CONTEÚDO */
 .main-content { flex: 1; padding: 30px; overflow-x: hidden; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+}
 
 .card { 
-    background: var(--white); padding: 20px; border-radius: 12px; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--border);
+    background: var(--white); 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
 }
 
-.data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+/* 4. TABELAS (RESPONSIVAS) */
+.table-container { overflow-x: auto; margin-top: 20px; }
+
+.data-table { width: 100%; border-collapse: collapse; }
+
 .data-table th { 
-    background: #f8fafc; padding: 15px; text-align: center; 
-    color: #64748b; font-size: 0.85rem; text-transform: uppercase; border-bottom: 2px solid var(--bg-light);
-}
-.data-table td { padding: 15px; text-align: center; border-bottom: 1px solid var(--bg-light); vertical-align: middle; }
-
-.btn-add { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-.btn-edit { color: #3498db; border: none; background: none; cursor: pointer; font-size: 1.1rem; margin-right: 10px; }
-.btn-del { color: var(--danger); border: none; background: none; cursor: pointer; font-size: 1.1rem; }
-
-/* MODAL CORRIGIDO */
-#modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); display: flex; align-items: center;
-    justify-content: center; z-index: 999; padding: 20px;
-}
-.modal-container {
-    width: 100%; max-width: 500px; background: white; padding: 25px; 
-    border-radius: 10px; max-height: 90vh; display: flex; flex-direction: column;
-}
-.modal-scroll { overflow-y: auto; padding-right: 5px; margin-bottom: 15px; }
-#oc-lista { font-size: 13px; max-height: 120px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 4px; }
-
-:root {
-    --primary: #2eb8ac;
-    --primary-dark: #248f85;
-    --bg-light: #f4f7f6;
-    --text-main: #333;
-    --white: #ffffff;
-    --danger: #e74c3c;
-    --border: #e2e8f0;
+    background: #f8fafc; 
+    padding: 15px; 
+    text-align: center; 
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--primary);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-body { background-color: var(--bg-light); color: var(--text-main); }
-.container { display: flex; min-height: 100vh; }
+.data-table td { 
+    padding: 15px; 
+    border-bottom: 1px solid #f1f5f9; 
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
 
-/* Sidebar e Menu */
-.sidebar { width: 260px; background: var(--white); border-right: 1px solid var(--border); padding: 30px 15px; }
-.menu-item { display: flex; align-items: center; padding: 12px 20px; color: #64748b; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-.menu-item:hover { background: #f0fdfa; color: var(--primary); }
-.menu-item.active { background: var(--primary); color: white; }
-
-/* Cards e Tabelas */
-.card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid var(--border); }
-.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-.data-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--primary); color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
-.data-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
 .data-table tr:hover { background-color: #f8fafc; }
 
-/* Botões */
-.btn-add { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+/* Alinhamento da primeira coluna (Geralmente nomes) */
+.data-table th:first-child, .data-table td:first-child { 
+    text-align: left !important; 
+    padding-left: 20px;
+    font-weight: 500;
+}
+
+/* 5. BOTÕES E COMPONENTES */
+.btn-add { 
+    background: var(--primary); 
+    color: var(--white); 
+    border: none; 
+    padding: 12px 24px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
 .btn-add:hover { background: var(--primary-dark); transform: translateY(-1px); }
 
-/* Inputs */
-input[type="month"], input[type="text"], input[type="number"], select { border: 1px solid #ddd; border-radius: 6px; outline: none; transition: 0.2s; }
-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(46, 184, 172, 0.1); }
-/* Alinhamento à esquerda para nomes de produtos e itens de OC */
-.data-table th:first-child, 
-.data-table td:first-child {
-    text-align: left !important;
-    padding-left: 20px; /* Adiciona um respiro na borda esquerda */
+.btn-edit { color: #3498db; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.btn-del { color: var(--danger); background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+
+/* 6. FORMULÁRIOS E INPUTS */
+input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    margin-top: 5px;
+    outline: none;
+    transition: 0.2s;
 }
 
-/* Garante que o texto longo não quebre o layout */
-.data-table td:first-child {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 400px; /* Limite opcional para nomes muito extensos */
+input:focus { 
+    border-color: var(--primary); 
+    box-shadow: 0 0 0 3px rgba(46, 184, 172, 0.1); 
 }
 
-/* Mantém os cabeçalhos de estoque e preço alinhados com os dados */
-.data-table th:nth-child(2), .data-table td:nth-child(2),
-.data-table th:nth-child(3), .data-table td:nth-child(3) {
-    text-align: center;
+/* 7. MODAL */
+#modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.6); 
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(4px);
 }
 
-/* Mantém as ações centralizadas */
-.data-table th:last-child, .data-table td:last-child {
-    text-align: center;
+.modal-container {
+    background: var(--white); 
+    padding: 30px; 
+    border-radius: 16px;
+    width: 90%; 
+    max-width: 550px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
