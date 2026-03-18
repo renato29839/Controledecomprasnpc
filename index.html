@@ -6,6 +6,7 @@
     <title>NPC - Sistema de Compras</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script type="importmap">
     {
         "imports": {
@@ -17,55 +18,70 @@
 </head>
 <body>
     <div class="container">
-        <aside class="sidebar">
+        <aside class="sidebar" role="navigation" aria-label="Menu Principal">
             <div class="logo-section">
                 <img src="https://i.postimg.cc/Wz5R0cdL/LOGONPC.png" alt="Logo NPC" class="logo-img">
-                <h2 class="system-title"></h2>
+                <h1 class="system-title" style="font-size: 1.2rem; color: var(--primary); margin-top: 10px;">
             </div>
+
             <nav class="menu">
-                         <div class="menu-item active" data-target="dashboard">
-                <i class="fa-solid fa-house"></i>
-                <span>Início</span>
-            </div>
-            <div class="menu-item" data-target="unidades">
-                <i class="fa-solid fa-hospital"></i>
-                <span>Unidades</span>
-            </div>
-            <div class="menu-item" data-target="fornecedores">
-                <i class="fa-solid fa-truck"></i>
-                <span>Fornecedores</span>
-            </div>
-            <div class="menu-item" data-target="produtos">
-                <i class="fa-solid fa-tags"></i>
-                <span>Produtos & Estoque</span>
-            </div>
-            <div class="menu-item" data-target="ordens">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                <span>Ordens de Compra</span>
-            </div>
-            <div class="menu-item" data-target="saidas">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                <span>Saída / Consumo</span>
-            </div>
-            <div class="menu-item" data-target="movimentacoes">
-                <i class="fa-solid fa-history"></i>
-                <span>Histórico Geral</span>
+                <p class="menu-label" style="padding: 10px 20px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Principal</p>
+                <div class="menu-item active" data-target="dashboard">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Início</span>
+                </div>
+
+                <p class="menu-label" style="padding: 10px 20px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-top: 15px;">Cadastros</p>
+                <div class="menu-item" data-target="unidades">
+                    <i class="fa-solid fa-hospital"></i>
+                    <span>Unidades</span>
+                </div>
+                <div class="menu-item" data-target="fornecedores">
+                    <i class="fa-solid fa-truck"></i>
+                    <span>Fornecedores</span>
+                </div>
+                <div class="menu-item" data-target="produtos">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Produtos & Estoque</span>
+                </div>
+
+                <p class="menu-label" style="padding: 10px 20px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-top: 15px;">Operações</p>
+                <div class="menu-item" data-target="ordens">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <span>Ordens de Compra</span>
+                </div>
+                <div class="menu-item" data-target="saidas">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Saída / Consumo</span>
+                </div>
+                <div class="menu-item" data-target="movimentacoes">
+                    <i class="fa-solid fa-history"></i>
+                    <span>Histórico Geral</span>
+                </div>
             </nav>
         </aside>
+
         <main class="main-content">
             <header>
-                <h2 id="page-title">Dashboard</h2>
-                <div class="user-info">Setor de Compras | <span id="current-date"></span></div>
+                <div class="header-left">
+                    <h2 id="page-title">Dashboard</h2>
+                </div>
+                <div class="user-info">
+                    <span class="badge">Setor de Compras</span>
+                    <span id="current-date" style="margin-left: 10px; font-weight: 500;"></span>
+                </div>
             </header>
+
             <section id="content-area">
-                <div class="card" style="text-align:center">
-                    <h3><i class="fa-solid fa-spinner fa-spin"></i> Inicializando sistema...</h3>
+                <div class="card" style="text-align:center; padding: 50px;">
+                    <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
+                    <h3>Sincronizando com o banco de dados...</h3>
+                    <p>Por favor, aguarde um instante.</p>
                 </div>
             </section>
         </main>
     </div>
+
     <script type="module" src="script.js"></script>
 </body>
 </html>
-
-
