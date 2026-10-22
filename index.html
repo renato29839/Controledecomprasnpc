@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NPC - Sistema de Compras</title>
+    <title>NPC | Compras e estoque</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -11,27 +11,41 @@
     {
         "imports": {
             "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
             "firebase/database": "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"
         }
     }
     </script>
 </head>
 <body>
-    <div class="container">
+    <main id="login-screen" class="auth-screen" hidden>
+        <form id="login-form" class="auth-card">
+            <img src="https://i.postimg.cc/Wz5R0cdL/LOGONPC.png" alt="Logo NPC" class="logo-img">
+            <h1>Acesso ao sistema</h1>
+            <p>Entre com seu e-mail corporativo para acessar compras e estoque.</p>
+            <label>E-mail<input id="login-email" type="email" autocomplete="username" required></label>
+            <label>Senha<input id="login-password" type="password" autocomplete="current-password" required></label>
+            <p id="login-error" class="auth-error" role="alert" aria-live="polite"></p>
+            <button class="btn-add" id="login-submit" type="submit">Entrar</button>
+        </form>
+    </main>
+
+    <div id="app-shell" class="container" hidden>
         <aside class="sidebar" role="navigation" aria-label="Menu Principal">
             <div class="logo-section">
                 <img src="https://i.postimg.cc/Wz5R0cdL/LOGONPC.png" alt="Logo NPC" class="logo-img">
-                <h1 class="system-title" style="font-size: 1.2rem; color: var(--primary); margin-top: 10px;">
+                <div class="brand-name">Compras e estoque</div>
+                <div class="brand-caption">Rotina operacional</div>
             </div>
 
             <nav class="menu">
-                <p class="menu-label" style="padding: 10px 20px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Principal</p>
+                <p class="menu-label">Principal</p>
                 <div class="menu-item active" data-target="dashboard">
                     <i class="fa-solid fa-house"></i>
                     <span>Início</span>
                 </div>
 
-                <p class="menu-label" style="padding: 10px 20px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-top: 15px;">Cadastros</p>
+                <p class="menu-label">Cadastros</p>
                 <div class="menu-item" data-target="unidades">
                     <i class="fa-solid fa-hospital"></i>
                     <span>Unidades</span>
@@ -44,8 +58,16 @@
                     <i class="fa-solid fa-tags"></i>
                     <span>Produtos & Estoque</span>
                 </div>
+                <div class="menu-item" data-target="centros-resultados">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Centros de resultados</span>
+                </div>
+                <div class="menu-item" data-target="despesas">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Despesas</span>
+                </div>
 
-                <p class="menu-label" style="padding: 10px 20px; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-top: 15px;">Operações</p>
+                <p class="menu-label">Operações</p>
                 <div class="menu-item" data-target="ordens">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                     <span>Ordens de Compra</span>
@@ -54,29 +76,43 @@
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     <span>Saída / Consumo</span>
                 </div>
+                <div class="menu-item" data-target="transferencias">
+                    <i class="fa-solid fa-right-left"></i>
+                    <span>Transferências</span>
+                </div>
                 <div class="menu-item" data-target="movimentacoes">
                     <i class="fa-solid fa-history"></i>
                     <span>Histórico Geral</span>
+                </div>
+                <div class="menu-item" data-target="analise">
+                    <i class="fa-solid fa-chart-column"></i>
+                    <span>Análise e exportação</span>
                 </div>
             </nav>
         </aside>
 
         <main class="main-content">
-            <header>
+            <header class="page-header">
                 <div class="header-left">
                     <h2 id="page-title">Dashboard</h2>
+                    <p class="page-subtitle">Uma visão simples do que precisa ser comprado, recebido e movimentado.</p>
                 </div>
                 <div class="user-info">
-                    <span class="badge">Setor de Compras</span>
-                    <span id="current-date" style="margin-left: 10px; font-weight: 500;"></span>
+                    <label class="company-switcher">Empresa ativa
+                        <select id="company-selector" aria-label="Selecionar empresa"></select>
+                    </label>
+                    <span class="badge" id="context-badge">Matriz · Almoxarifado central</span>
+                    <span id="signed-in-user"></span>
+                    <button class="btn-secondary" id="logout-button" type="button">Sair</button>
+                    <span id="current-date"></span>
                 </div>
             </header>
 
             <section id="content-area">
                 <div class="card" style="text-align:center; padding: 50px;">
                     <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color: var(--primary); margin-bottom: 20px;"></i>
-                    <h3>Sincronizando com o banco de dados...</h3>
-                    <p>Por favor, aguarde um instante.</p>
+                    <h3>Carregando os dados da unidade...</h3>
+                    <p>Isso costuma levar apenas alguns segundos.</p>
                 </div>
             </section>
         </main>
